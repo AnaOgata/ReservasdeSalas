@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+private final HistoricoReservas historico = new HistoricoReservasProxy();
 
 public class GerenciadorReservas implements Notificavel {
 
@@ -64,6 +65,13 @@ public class GerenciadorReservas implements Notificavel {
         notificarObservadores(novaReserva, "RESERVA_CRIADA");
         System.out.println("✅ Reserva criada: " + novaReserva);
         return novaReserva;
+
+        historico.registrar(new EntradaHistorico(
+                reserva.getUsuario(),
+                reserva.getSala(),
+                reserva.getDataHora(),
+                "CONFIRMADA"
+        ));
     }
 
     public boolean modificarReserva(Reserva reserva, LocalDateTime novoInicio, LocalDateTime novoFim) {
@@ -91,6 +99,13 @@ public class GerenciadorReservas implements Notificavel {
         reserva.setStatus(Reserva.Status.CANCELADA);
         notificarObservadores(reserva, "RESERVA_CANCELADA");
         System.out.println("🗑️  Reserva cancelada: " + reserva);
+
+        historico.registrar(new EntradaHistorico(
+                reserva.getUsuario(),
+                reserva.getSala(),
+                reserva.getDataHora(),
+                "CANCELADA"
+        ));
     }
 
     // RF-01: listar salas disponíveis no intervalo
