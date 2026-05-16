@@ -5,6 +5,8 @@ import com.roombooking.decorator.ComMultimidia;
 import com.roombooking.factory.*;
 import com.roombooking.model.*;
 import com.roombooking.observer.*;
+import com.roombooking.proxy.HistoricoReservas;
+import com.roombooking.proxy.HistoricoReservasProxy;
 import com.roombooking.singleton.ConfiguracaoSistema;
 import com.roombooking.strategy.PrimeiroAReservar;
 import com.roombooking.strategy.PrioridadeDocente;
@@ -97,5 +99,34 @@ public class Main {
         System.out.println("\n==============================================");
         System.out.println("📌 RF-05: Relatório diário (pull):\n");
         gerenciador.gerarRelatorioDiario();
+
+        // --- Demonstração do Proxy de Histórico ---
+        HistoricoReservas historico = new HistoricoReservasProxy();
+            
+        // Registra entradas
+        historico.registrar(new EntradaHistorico(estudante, sala1,
+            LocalDateTime.now().minusDays(2), "CONFIRMADA"));
+        historico.registrar(new EntradaHistorico(estudante, sala2,
+            LocalDateTime.now().minusDays(1), "CANCELADA"));
+        
+        // Acesso legítimo (próprio usuário)
+        System.out.println("\n-- Histórico próprio --");
+        historico.buscarHistorico(estudante, estudante)
+                 .forEach(System.out::println);
+        
+        // Acesso via cache (segunda chamada)
+        System.out.println("\n-- Segunda consulta (cache) --");
+        historico.buscarHistorico(estudante, estudante)
+                 .forEach(System.out::println);
+        
+        // Acesso negado (outro usuário sem admin)
+        System.out.println("\n-- Tentativa de acesso não autorizado --");
+        historico.buscarHistorico(outroEstudante, estudante)
+                 .forEach(System.out::println);
+        
+        // Acesso autorizado por admin
+        System.out.println("\n-- Acesso do admin --");
+        historico.buscarHistorico(admin, estudante)
+                 .forEach(System.out::println);
     }
 }
